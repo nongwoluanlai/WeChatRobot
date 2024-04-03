@@ -20,6 +20,7 @@ from base.func_xinghuo_web import XinghuoWeb
 from configuration import Config
 from constants import ChatType
 from job_mgmt import Job
+from msgMap import MsgMap
 
 __version__ = "39.0.10.1"
 
@@ -32,6 +33,7 @@ class Robot(Job):
         self.wcf = wcf
         self.config = config
         self.LOG = logging.getLogger("Robot")
+        self.CusMsgMap = MsgMap()
         self.wxid = self.wcf.get_self_wxid()
         self.allContacts = self.getAllContacts()
 
@@ -167,6 +169,12 @@ class Robot(Job):
                     self.config.reload()
                     self.LOG.info("已更新")
             else:
+                if msg.content in self.CusMsgMap.mp:
+                    ans = self.CusMsgMap.mp[msg.content]
+                    ans = ans() if not isinstance(ans, str) else ans
+                    self.sendTextMsg(ans, msg.sender)
+                    self.LOG.info("回复规则消息")
+                    return
                 self.toChitchat(msg)  # 闲聊
 
     def onMsg(self, msg: WxMsg) -> int:
